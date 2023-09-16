@@ -4,6 +4,8 @@
  */
 package swingprojectant;
 
+import view.Login;
+
 /**
  *
  * @author user
@@ -15,6 +17,12 @@ public class SwingProjectAnt {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        
+        Login l=new Login();
+        
+        l.setVisible(true);
+        l.setLocationRelativeTo(null);
+        
     }
     
 }

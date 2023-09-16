@@ -157,6 +157,7 @@ public class Login extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(rootPane, "Welcome Admin");
             dispose();
             board.setVisible(true);
+            board.setLocationRelativeTo(null);
             
         }
         else{
