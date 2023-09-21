@@ -28,50 +28,187 @@ public class DashBoard extends javax.swing.JFrame {
     PreparedStatement ps;
     String sql = "";
     ResultSet rs;
-    
-    String[] productColumns={"Product ID","Product Name", "Product catagory", "Product Code" };
-    
-    public  void getAllProduct(){
-    
-        DefaultTableModel model=new DefaultTableModel();
-        model.setColumnIdentifiers(productColumns);
+
+    String[] productColumns = {"Product ID", "Product Name", "Product Catagory", "Product Code"};
+    String[] purchaseColumns = {"Purchase ID", "Product Name", "UnitPrice", "Qunatity","Total Prices", "Date"};
+
+     
+    public  void updateStockSales(){
         
-        tblProduct.setModel(model);
+        sql="update stock set quantity=quantity-? where pName= ?";
         
-        sql="select * from product";
-        
-        try {
-            
+       try {
             ps=con.getCon().prepareStatement(sql);
             
-            rs=ps.executeQuery();
+            ps.setFloat(1, Float.parseFloat(txtSalesQuantity.getText().trim()));
+            ps.setString(2, txtSalesProductName.getSelectedItem().toString());
             
-            while(rs.next()){
-                
-                int id=rs.getInt("productId");
-                String name=rs.getString("name");
-                String catagory=rs.getString("catagory");
-                String code=rs.getString("productCode");
-                
-                model.addRow(new Object[]{id,name, catagory, code});
+            ps.executeUpdate();
             
+            ps.close();
+            con.getCon().close();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    
+    }
+    
+    
+    
+    public  void updateStockPurchase(){
+        
+        sql="update stock set quantity=quantity+? where pName= ?";
+        
+       try {
+            ps=con.getCon().prepareStatement(sql);
+            
+            ps.setFloat(1, Float.parseFloat(txtPurcahseQuantity.getText().trim()));
+            ps.setString(2, comboPurchaseProductName.getSelectedItem().toString());
+            
+            ps.executeUpdate();
+            
+            ps.close();
+            con.getCon().close();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    
+    }
+    
+    public void addProductToStock(){
+         sql = "insert into stock(pName, quantity) values(?,?)";
+        
+        try {
+            ps=con.getCon().prepareStatement(sql);
+            
+            ps.setString(1, txtProductName.getText().trim());
+            ps.setFloat(2, 0.0f);
+            
+            ps.executeUpdate();
+            
+            ps.close();
+            con.getCon().close();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    
+    
+    }
+    
+    public void getProductNameToCombo() {
+
+        sql = "select name from product";
+        comboPurchaseProductName.removeAllItems();
+        txtSalesProductName.removeAllItems();
+
+        try {
+            ps = con.getCon().prepareStatement(sql);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                String name = rs.getString("name");
+
+                comboPurchaseProductName.addItem(name);
+                txtSalesProductName.addItem(name);
+                
             }
-             ps.close();
-            con.getCon().close(); 
-            
+
+            rs.close();
+            ps.close();
+            con.getCon().close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    public void getAllProduct() {
+
+        DefaultTableModel model = new DefaultTableModel();
+        model.setColumnIdentifiers(productColumns);
+
+        tblProduct.setModel(model);
+
+        sql = "select * from product";
+
+        try {
+
+            ps = con.getCon().prepareStatement(sql);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                int id = rs.getInt("productId");
+                String name = rs.getString("name");
+                String catagory = rs.getString("catagory");
+                String code = rs.getString("productCode");
+
+                model.addRow(new Object[]{id, name, catagory, code});
+
+            }
+            rs.close();
+            ps.close();
+            con.getCon().close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    
+    public void getAllPurchase() {
+
+        DefaultTableModel model = new DefaultTableModel();
+        model.setColumnIdentifiers(purchaseColumns);
+
+        tblPurchase.setModel(model);
+
+        sql = "select * from purcahse";
+
+        try {
+
+            ps = con.getCon().prepareStatement(sql);
+
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                int id = rs.getInt("purcahseId");
+                String name = rs.getString("name");
+                float quantity = rs.getFloat("quantity");
+                float unitprice = rs.getFloat("unitPrice");
+                float totalPrice=rs.getFloat("totalPrice");
+                java.util.Date date=rs.getDate("date");
+
+                model.addRow(new Object[]{id, name, unitprice, quantity, totalPrice,date });
+
+            }
+            rs.close();
+            ps.close();
+            con.getCon().close();
+
         } catch (SQLException ex) {
             Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    
-
     /**
      * Creates new form DashBoard
      */
     public DashBoard() {
         initComponents();
         getAllProduct();
+        getProductNameToCombo();
+        getAllPurchase();
     }
 
     // calculate total Price 
@@ -151,7 +288,6 @@ public class DashBoard extends javax.swing.JFrame {
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         txtSalesSID = new javax.swing.JTextField();
-        txtSalesProductName = new javax.swing.JTextField();
         txtSalesUnitPrice = new javax.swing.JTextField();
         txtSalesQuantity = new javax.swing.JTextField();
         txtSalesDicount = new javax.swing.JTextField();
@@ -163,7 +299,29 @@ public class DashBoard extends javax.swing.JFrame {
         txtSalesDueAmount = new javax.swing.JTextField();
         btnSalesSubmit = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
+        txtSalesProductName = new javax.swing.JComboBox<>();
         purchase = new javax.swing.JPanel();
+        jPanel13 = new javax.swing.JPanel();
+        jLabel20 = new javax.swing.JLabel();
+        jPanel14 = new javax.swing.JPanel();
+        jLabel21 = new javax.swing.JLabel();
+        txtPurcahseProductId = new javax.swing.JTextField();
+        jLabel22 = new javax.swing.JLabel();
+        jLabel23 = new javax.swing.JLabel();
+        jLabel24 = new javax.swing.JLabel();
+        txtPurcahseUnitPrice = new javax.swing.JTextField();
+        txtPurcahseQuantity = new javax.swing.JTextField();
+        jLabel25 = new javax.swing.JLabel();
+        jLabel26 = new javax.swing.JLabel();
+        txtPurcahseTotalPrice = new javax.swing.JTextField();
+        btnPurchaseSave = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
+        jButton6 = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tblPurchase = new javax.swing.JTable();
+        datePurchaseDate = new com.toedter.calendar.JDateChooser();
+        comboPurchaseProductName = new javax.swing.JComboBox<>();
         product = new javax.swing.JPanel();
         jPanel7 = new javax.swing.JPanel();
         jLabel15 = new javax.swing.JLabel();
@@ -400,15 +558,14 @@ public class DashBoard extends javax.swing.JFrame {
                                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addComponent(txtSalesQuantity, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 439, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(txtSalesUnitPrice, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 439, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(jPanel6Layout.createSequentialGroup()
-                                    .addComponent(jLabel5)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(txtSalesProductName, javax.swing.GroupLayout.PREFERRED_SIZE, 439, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel6Layout.createSequentialGroup()
+                            .addGroup(jPanel6Layout.createSequentialGroup()
+                                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(28, 28, 28)
-                                    .addComponent(txtSalesSID, javax.swing.GroupLayout.PREFERRED_SIZE, 439, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(jLabel5))
+                                .addGap(23, 23, 23)
+                                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(txtSalesSID, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
+                                    .addComponent(txtSalesProductName, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                         .addGap(87, 87, 87)
                         .addComponent(btnSalesSubmit)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -489,15 +646,146 @@ public class DashBoard extends javax.swing.JFrame {
 
         menu.addTab("tab2", sales);
 
+        jPanel13.setBackground(new java.awt.Color(0, 102, 102));
+        jPanel13.setForeground(new java.awt.Color(255, 255, 255));
+        jPanel13.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        jLabel20.setFont(new java.awt.Font("Trebuchet MS", 1, 24)); // NOI18N
+        jLabel20.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel20.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel20.setText("Purchase");
+        jPanel13.add(jLabel20, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 990, 73));
+
+        jLabel21.setText("Purchase ID");
+
+        jLabel22.setText("Product Name");
+
+        jLabel23.setText("Quantiry");
+
+        jLabel24.setText("Unit Price");
+
+        jLabel25.setText("TotalPrice");
+
+        jLabel26.setText("Date");
+
+        btnPurchaseSave.setText("Save");
+        btnPurchaseSave.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnPurchaseSaveMouseClicked(evt);
+            }
+        });
+
+        jButton4.setText("Update");
+
+        jButton5.setText("Delete");
+
+        jButton6.setText("Reset");
+
+        tblPurchase.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(tblPurchase);
+
+        javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
+        jPanel14.setLayout(jPanel14Layout);
+        jPanel14Layout.setHorizontalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel14Layout.createSequentialGroup()
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel14Layout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel21)
+                            .addComponent(jLabel22)
+                            .addComponent(jLabel24)
+                            .addComponent(jLabel23)
+                            .addComponent(jLabel25)
+                            .addComponent(jLabel26))
+                        .addGap(32, 32, 32)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtPurcahseQuantity)
+                            .addComponent(txtPurcahseTotalPrice)
+                            .addComponent(txtPurcahseUnitPrice)
+                            .addComponent(datePurchaseDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel14Layout.createSequentialGroup()
+                                .addComponent(txtPurcahseProductId, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(comboPurchaseProductName, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel14Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnPurchaseSave)
+                            .addComponent(jButton5))
+                        .addGap(77, 77, 77)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jButton6)
+                            .addComponent(jButton4))))
+                .addGap(138, 138, 138)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 531, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+        jPanel14Layout.setVerticalGroup(
+            jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel14Layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel14Layout.createSequentialGroup()
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel21)
+                            .addComponent(txtPurcahseProductId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel22)
+                            .addComponent(comboPurchaseProductName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtPurcahseUnitPrice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel24))
+                        .addGap(21, 21, 21)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel23)
+                            .addComponent(txtPurcahseQuantity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel25)
+                            .addComponent(txtPurcahseTotalPrice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel26)
+                            .addComponent(datePurchaseDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(28, 28, 28)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnPurchaseSave)
+                            .addComponent(jButton4))
+                        .addGap(49, 49, 49)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButton5)
+                            .addComponent(jButton6))))
+                .addContainerGap(63, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout purchaseLayout = new javax.swing.GroupLayout(purchase);
         purchase.setLayout(purchaseLayout);
         purchaseLayout.setHorizontalGroup(
             purchaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 990, Short.MAX_VALUE)
+            .addComponent(jPanel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         purchaseLayout.setVerticalGroup(
             purchaseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 589, Short.MAX_VALUE)
+            .addGroup(purchaseLayout.createSequentialGroup()
+                .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(jPanel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         menu.addTab("tab3", purchase);
@@ -639,7 +927,7 @@ public class DashBoard extends javax.swing.JFrame {
         product.setLayout(productLayout);
         productLayout.setHorizontalGroup(
             productLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
+            .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         productLayout.setVerticalGroup(
@@ -830,7 +1118,7 @@ public class DashBoard extends javax.swing.JFrame {
         try {
             ps = con.getCon().prepareStatement(sql);
 
-            ps.setString(1, txtSalesProductName.getText().trim());
+            ps.setString(1, txtSalesProductName.getSelectedItem().toString());
             ps.setFloat(2, Float.parseFloat(txtSalesUnitPrice.getText().trim()));
             ps.setFloat(3, Float.parseFloat(txtSalesQuantity.getText().trim()));
             ps.setFloat(4, getActualPrice());
@@ -844,7 +1132,8 @@ public class DashBoard extends javax.swing.JFrame {
             con.getCon().close();
 
             JOptionPane.showMessageDialog(rootPane, "Data Submitted");
-
+            updateStockSales();
+            
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(rootPane, "Data not Submit");
             Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
@@ -854,22 +1143,23 @@ public class DashBoard extends javax.swing.JFrame {
 
     private void btnProductActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProductActionPerformed
         // TODO add your handling code here:
-         menu.setSelectedIndex(3);
+        menu.setSelectedIndex(3);
     }//GEN-LAST:event_btnProductActionPerformed
 
     private void btnProductSaveMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnProductSaveMouseClicked
         // TODO add your handling code here:
+
+        sql = "insert into product(name, catagory, productCode) values(?,?,?)";
         
-        sql="insert into product(name, catagory, productCode) values(?,?,?)";
         
+
         try {
-            ps=con.getCon().prepareStatement(sql);
-            
+            ps = con.getCon().prepareStatement(sql);
+
             ps.setString(1, txtProductName.getText().trim());
             ps.setString(2, txtProductCatagory.getSelectedItem().toString());
             ps.setString(3, txtProductCode.getText().trim());
-            
-                      
+
             ps.executeUpdate();
             ps.close();
             con.getCon().close();
@@ -877,56 +1167,87 @@ public class DashBoard extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(rootPane, "Data Save");
             getAllProduct();
             
+            getProductNameToCombo();
+            addProductToStock();
+
         } catch (SQLException ex) {
-             JOptionPane.showMessageDialog(rootPane, "Data not Save");
+            JOptionPane.showMessageDialog(rootPane, "Data not Save");
             Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }//GEN-LAST:event_btnProductSaveMouseClicked
 
     private void tblProductMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblProductMouseClicked
         // TODO add your handling code here:
-        
-       int row=tblProduct.getSelectedRow();
-        
-       String id=tblProduct.getModel().getValueAt(row, 0).toString();
-       String name=tblProduct.getModel().getValueAt(row, 1).toString();
-       String catagory=tblProduct.getModel().getValueAt(row, 2).toString();
-       String code=tblProduct.getModel().getValueAt(row, 3).toString();
-       
-       txtProductId.setText(id);
-       txtProductName.setText(name);
-       txtProductCatagory.setSelectedItem(catagory);
-       txtProductCode.setText(code);
-        
+
+        int row = tblProduct.getSelectedRow();
+
+        String id = tblProduct.getModel().getValueAt(row, 0).toString();
+        String name = tblProduct.getModel().getValueAt(row, 1).toString();
+        String catagory = tblProduct.getModel().getValueAt(row, 2).toString();
+        String code = tblProduct.getModel().getValueAt(row, 3).toString();
+
+        txtProductId.setText(id);
+        txtProductName.setText(name);
+        txtProductCatagory.setSelectedItem(catagory);
+        txtProductCode.setText(code);
+
     }//GEN-LAST:event_tblProductMouseClicked
 
     private void btnProductDeleteMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnProductDeleteMouseClicked
         // TODO add your handling code here:
-        sql="delete from  product where productId=?";
-        
+        sql = "delete from  product where productId=?";
+
         try {
-            ps=con.getCon().prepareStatement(sql);
+            ps = con.getCon().prepareStatement(sql);
             ps.setInt(1, Integer.parseInt(txtProductId.getText().trim()));
-            
+
             ps.executeUpdate();
             ps.close();
             con.getCon().close();
 
             JOptionPane.showMessageDialog(rootPane, "Data Deleted");
             getAllProduct();
-            
-            
+
         } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(rootPane, "Data not Delete");
+            JOptionPane.showMessageDialog(rootPane, "Data not Delete");
 
             Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
         }
-            
-            
-        
-        
+
+
     }//GEN-LAST:event_btnProductDeleteMouseClicked
+
+    private void btnPurchaseSaveMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnPurchaseSaveMouseClicked
+        // TODO add your handling code here:
+        
+        sql="insert into purcahse(name,quantity, unitPrice, totalPrice, date)"
+                + " values(?,?,?,?,?)";
+        
+        try {
+            ps=con.getCon().prepareStatement(sql);
+            
+            ps.setString(1, comboPurchaseProductName.getSelectedItem().toString());
+            ps.setFloat(2, Float.parseFloat(txtPurcahseQuantity.getText().trim()));
+            ps.setFloat(3, Float.parseFloat(txtPurcahseUnitPrice.getText().trim()));
+            ps.setFloat(4, Float.parseFloat(txtPurcahseTotalPrice.getText().trim()));
+            ps.setDate(5, convertUtilDateToSqlDate(datePurchaseDate.getDate()));
+            
+            ps.executeUpdate();
+            
+            ps.close();
+            con.getCon().close();
+            
+            JOptionPane.showMessageDialog(rootPane, "Data Save");
+            updateStockPurchase();
+            
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Data not Save");
+            Logger.getLogger(DashBoard.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }//GEN-LAST:event_btnPurchaseSaveMouseClicked
 
     /**
      * @param args the command line arguments
@@ -974,12 +1295,18 @@ public class DashBoard extends javax.swing.JFrame {
     private javax.swing.JButton btnProductSave;
     private javax.swing.JButton btnProductUpdate;
     private javax.swing.JButton btnPurchase;
+    private javax.swing.JButton btnPurchaseSave;
     private javax.swing.JButton btnSales;
     private javax.swing.JButton btnSalesSubmit;
+    private javax.swing.JComboBox<String> comboPurchaseProductName;
+    private com.toedter.calendar.JDateChooser datePurchaseDate;
     private com.toedter.calendar.JDateChooser dateSalesDate;
     private javax.swing.JPanel home;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -992,6 +1319,13 @@ public class DashBoard extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
+    private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1003,6 +1337,8 @@ public class DashBoard extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -1012,21 +1348,27 @@ public class DashBoard extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField jTextField9;
     private javax.swing.JTabbedPane menu;
     private javax.swing.JPanel product;
     private javax.swing.JPanel purchase;
     private javax.swing.JPanel sales;
     private javax.swing.JTable tblProduct;
+    private javax.swing.JTable tblPurchase;
     private javax.swing.JComboBox<String> txtProductCatagory;
     private javax.swing.JTextField txtProductCode;
     private javax.swing.JTextField txtProductId;
     private javax.swing.JTextField txtProductName;
+    private javax.swing.JTextField txtPurcahseProductId;
+    private javax.swing.JTextField txtPurcahseQuantity;
+    private javax.swing.JTextField txtPurcahseTotalPrice;
+    private javax.swing.JTextField txtPurcahseUnitPrice;
     private javax.swing.JTextField txtSalesActualPice;
     private javax.swing.JTextField txtSalesCashReceived;
     private javax.swing.JTextField txtSalesDicount;
     private javax.swing.JTextField txtSalesDueAmount;
-    private javax.swing.JTextField txtSalesProductName;
+    private javax.swing.JComboBox<String> txtSalesProductName;
     private javax.swing.JTextField txtSalesQuantity;
     private javax.swing.JTextField txtSalesSID;
     private javax.swing.JTextField txtSalesTotalPrice;
